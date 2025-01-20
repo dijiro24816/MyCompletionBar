@@ -1,112 +1,114 @@
-
-
 var candidates = [
     "hello",
     "hello world",
     "hello is a word for morning"
 ];
 
-
 class Rotation {
     // Restrict: beg < end
     constructor(beg, end) {
         this.beg = beg;
         this.end = end;
-        this.i = beg;
+        this.idx = beg;
     }
 
+    prev() {
+        if (this.idx == this.beg)
+            this.idx = this.end;
+        this.idx--;
+        return this.idx;
+    }
+
+    next() {
+        this.idx++;
+        if (this.idx == this.end)
+            this.idx = this.beg;
+        return this.idx;
+    }
+
+    set(idx) {
+        return this.idx = idx;
+    }
+
+    reset() {
+        return this.idx = this.beg;
+    }
+}
+
+class CompletionDOM {
+    constructor(containerId) {
+        this.containerElem = document.getElementById(containerId);
+        this.containerElem.addEventListener("mouseleave", () => { this.over() });
+        this.candidates = [];
+        this.candidateElems = [];
+        this.rotation = new Rotation(-1, 0);
+    }
+
+    render(candidates) {
+        if (candidates != this.candidates) {
+            this.rotation = new Rotation(-1, candidates.length);
+            this.draw(this.candidates = structuredClone(candidates));
+        }
+    }
+
+    updateSelection(oldIdx, newIdx) {
+        if (oldIdx != -1)
+            this.candidateElems[oldIdx].classList.remove("select");
+
+        if (newIdx != -1)
+            this.candidateElems[newIdx].classList.add("select");
+    }
 
     up() {
-        if (this.i == this.beg) {
-            this.i = this.end;
-        }
-        this.i--;
-        return this.i;
+        this.updateSelection(this.rotation.idx, this.rotation.prev());
     }
-
 
     down() {
-        this.i++;
-        if (this.i == this.end) {
-            this.i = this.beg;
-        }
-        return this.i;
+        this.updateSelection(this.rotation.idx, this.rotation.next());
+    }
+
+    point(idx) {
+        this.updateSelection(this.rotation.idx, this.rotation.set(idx));
+    }
+
+    over() {
+        this.updateSelection(this.rotation.idx, this.rotation.reset());
+    }
+
+    draw(candidates) {
+        this.erase();
+
+        this.candidateElems = (new Array(candidates.length)).fill().map((e) => { return document.createElement("li"); });
+        this.candidateElems.forEach((e, i) => {
+            e.classList.add("candidate");
+            e.innerText = candidates[i];
+            e.addEventListener("click", (event) => {
+                console.log("click");
+            });
+
+            e.addEventListener("mouseenter", (event) => {
+                this.point(i);
+            });
+
+            this.containerElem.appendChild(e);
+        });
+    }
+
+    erase() {
+        this.containerElem.innerHTML = "";
     }
 }
-
-
-class Completion {
-    constructor(candidates) {
-        this.candidates = candidates;
-        this.rotation = new Rotation(-1, candidates.length);
-    }
-
-
-    up() {
-        this.rotation.up();
-    }
-
-
-    down() {
-        this.rotation.down();
-    }
-
-
-    reset(candidates) {
-        this.candidates = candidates;
-        this.rotation.i = -1;
-        this.rotation = new Rotation(-1, candidates.length);
-    }
-
-
-    clear() {
-        this.reset([]);
-    }
-
-
-    word() {
-        return this.rotation.i < 0 ? null : this.candidates[this.rotation.i];
-    }
-}
-
-
-var completion = new Completion(candidates);
-
-
-function renderCompletion(completion) {
-    let completion_elem = document.getElementById("tag-search-completion");
-    completion_elem.innerHTML = "";
-
-
-    for (var i = 0; i < completion.candidates.length; i++) {
-        let candidate_elem = document.createElement("li");
-        candidate_elem.innerText = completion.candidates[i];
-
-
-        candidate_elem.addEventListener("click", (e) => {
-            console.log(e.target.innerText);
-        })
-
-
-        if (i == completion.rotation.i) {
-            candidate_elem.style.backgroundColor = "red"
-        }
-        completion_elem.appendChild(candidate_elem);
-    }
-}
-
 
 window.onload = () => {
     let tag_search = document.getElementById("tag-search");
 
+    completionDOM = new CompletionDOM("completion");
 
     tag_search.addEventListener("input", (event) => {
         // candiates
-        completion.reset(candidates.filter((candidate) => {
+        completionDOM.render(candidates.filter((candidate) => {
             return candidate.startsWith(event.target.value, 0);
         }));
-   
-        renderCompletion(completion);
     });
 
 
@@ -114,34 +116,31 @@ window.onload = () => {
         switch (e.key) {
             case "ArrowUp":
                 e.preventDefault();
-                completion.up();
-                renderCompletion(completion);
+                completionDOM.up();
                 break;
             case "ArrowDown":
                 e.preventDefault();
-                completion.down();
-                renderCompletion(completion);
+                completionDOM.down();
                 break;
             case "Enter":
-                let word = completion.word();
-                if (!word) {
+                let idx = completionDOM.rotation.idx;
+                if (idx < 0) {
                     console.log(tag_search.value);
                 } else {
-                    console.log(word);
+                    console.log(completionDOM.candidates[idx]);
                 }
                 break;
             case "Escape":
-                completion.clear();
-                renderCompletion(completion);
+                completionDOM.render([]);
                 break;
         }
     });
 
 
-    let tag_file = document.getElementById("tag-file");
-    tag_file.addEventListener("change", async (e) => {
-        let text = await e.target.files[0].text();
-        candidates = text.match(/[^\r\n]+/g);
-    })
+    // let tag_file = document.getElementById("tag-file");
+    // tag_file.addEventListener("change", async (e) => {
+    //     let text = await e.target.files[0].text();
+    //     candidates = text.match(/[^\r\n]+/g);
+    // })
 }
 

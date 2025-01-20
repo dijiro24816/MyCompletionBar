@@ -9,30 +9,42 @@ h2 {
     background-color: blue;
 }
 
+#tag-search {
+    padding: 1px 2px;
+    margin: 0px;
+    border: 2px solid black;
+
+    width: 100%;
+
+    /* position: relative; */
+
+}
+
+#completion {
+    padding: 1px 2px;
+    margin: 0px;
+    border: 2px solid black;
+
+    /* width: 100%; */
+
+    /* position: absolute; */
+
+    list-style: none;
+
+
+    /* position: absolute; */
+    background-color: white;
+    /* width: 200px; */
+}
+
+
 
 #search-bar {
-}
-
-
-#tag-search-completion {
-    list-style: none;
-    padding-inline-start: 0px;
-    margin-block-start: 0px;
-    position: absolute;
-    background-color: white;
-    z-index: 999;
-    border-radius: 0px 0px 5px 5px;
-    border: solid black 1px;
-}
-
-
-.completion-candidate {
-
 
 }
 
-
-.completion-candidate-selecte {
-   
+.select {
+    background-color: yellow;
 }
+
 
