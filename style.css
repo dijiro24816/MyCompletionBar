@@ -9,42 +9,50 @@ h2 {
     background-color: blue;
 }
 
+#search-bar {
+    position: relative;
+}
+
 #tag-search {
-    padding: 1px 2px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px;
     margin: 0px;
     border: 2px solid black;
+    font-size: 18px;
 
-    width: 100%;
-
-    /* position: relative; */
+    border-radius: 10px 10px 0px 0px;
 
 }
 
 #completion {
-    padding: 1px 2px;
+    width: 100%;
+    box-sizing: border-box;
+    padding-inline-start: 0px;
+    list-style: none;
+    position: absolute;
+    text-wrap: nowrap;
+    /* padding: 5px; */
     margin: 0px;
     border: 2px solid black;
+    font-size: 18px;
 
-    /* width: 100%; */
-
-    /* position: absolute; */
-
-    list-style: none;
-
-
-    /* position: absolute; */
     background-color: white;
-    /* width: 200px; */
+
+
 }
 
 
+.candidate {
+    padding: 5px;
+}
 
 #search-bar {
 
 }
 
 .select {
-    background-color: yellow;
+    background-color: ghostwhite;
 }
 
 

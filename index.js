@@ -83,7 +83,7 @@ class CompletionDOM {
             e.classList.add("candidate");
             e.innerText = candidates[i];
             e.addEventListener("click", (event) => {
-                console.log("click");
+                console.log(this.candidates[i]);
             });
 
             e.addEventListener("mouseenter", (event) => {
@@ -137,10 +137,10 @@ window.onload = () => {
     });
 
 
-    // let tag_file = document.getElementById("tag-file");
-    // tag_file.addEventListener("change", async (e) => {
-    //     let text = await e.target.files[0].text();
-    //     candidates = text.match(/[^\r\n]+/g);
-    // })
+    let tag_file = document.getElementById("tag-file");
+    tag_file.addEventListener("change", async (e) => {
+        let text = await e.target.files[0].text();
+        candidates = text.match(/[^\r\n]+/g);
+    })
 }
 
