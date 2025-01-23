@@ -9,11 +9,13 @@ h2 {
     background-color: blue;
 }
 
-#search-bar {
+#search-tag {
     position: relative;
+
+    width: 50%;
 }
 
-#tag-search {
+#search-tag__input {
     width: 100%;
     box-sizing: border-box;
     padding: 5px;
@@ -25,14 +27,14 @@ h2 {
 
 }
 
-#completion {
+#search-tag__completion {
     width: 100%;
     box-sizing: border-box;
     padding-inline-start: 0px;
     list-style: none;
     position: absolute;
     text-wrap: nowrap;
-    /* padding: 5px; */
+
     margin: 0px;
     border: 2px solid black;
     font-size: 18px;
@@ -43,15 +45,20 @@ h2 {
 }
 
 
-.candidate {
+.search-tag__completion-candidate {
     padding: 5px;
+    overflow: hidden;
 }
 
 #search-bar {
 
 }
 
-.select {
+#search-tag__completion:empty {
+    display: none;
+}
+
+.search-tag__completion-candidate--highlight {
     background-color: ghostwhite;
 }
 

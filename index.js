@@ -35,16 +35,74 @@ class Rotation {
     }
 }
 
-class CompletionDOM {
-    constructor(containerId) {
-        this.containerElem = document.getElementById(containerId);
-        this.containerElem.addEventListener("mouseleave", () => { this.over() });
+class CompletionInput {
+    constructor(rootId, inputElemName) {
+        this.rootId = rootId;
+        let rootElem = document.getElementById(rootId);
+
+        this.inputElem = document.createElement("input");
+        this.inputElem.id = rootId + "__input";
+        this.inputElem.type = "text";
+        this.inputElem.name = inputElemName;
+        this.inputElem.addEventListener("input", (event) => {
+            this.setCandidates(candidates.filter((candidate) => {
+                return candidate.startsWith(event.target.value, 0);
+            }));
+        });
+        this.inputElem.addEventListener("keydown", (e) => {
+            switch (e.key) {
+                case "ArrowUp":
+                    e.preventDefault();
+                    this.up();
+                    break;
+                case "ArrowDown":
+                    e.preventDefault();
+                    this.down();
+                    break;
+                case "Enter":
+                    let idx = this.rotation.idx;
+                    if (idx < 0) {
+                        console.log(this.inputElem.value);
+                    } else {
+                        console.log(this.candidates[idx]);
+                    }
+                    break;
+                case "Escape":
+                    this.clear();
+                    break;
+            }
+        });
+        rootElem.appendChild(this.inputElem);
+
+        this.completionElem = document.createElement("div");
+        this.completionElem.id = rootId + "__completion";
+        this.completionElem.addEventListener("mouseleave", () => {
+            this.over();
+            console.log("over");
+        });
+        this.completionElem.addEventListener("mousemove", () => {
+            this.isCompletionMouseMoving = true;
+        })
+        rootElem.appendChild(this.completionElem);
+
+        this.isCompletionMouseMoving = false;
+
         this.candidates = [];
         this.candidateElems = [];
         this.rotation = new Rotation(-1, 0);
+
+        this.originalInputValue = "";
     }
 
-    render(candidates) {
+    storeInputValue() {
+        this.originalInputValue = this.inputElem.value;
+    }
+
+    restoreInputValue() {
+        this.inputElem.value = this.originalInputValue;
+    }
+
+    setCandidates(candidates) {
         if (candidates != this.candidates) {
             this.rotation = new Rotation(-1, candidates.length);
             this.draw(this.candidates = structuredClone(candidates));
@@ -52,11 +110,60 @@ class CompletionDOM {
     }
 
     updateSelection(oldIdx, newIdx) {
-        if (oldIdx != -1)
-            this.candidateElems[oldIdx].classList.remove("select");
+        if (oldIdx == -1)
+           this.storeInputValue();
+        else {
+            this.candidateElems[oldIdx].classList.remove(this.rootId + "__completion-candidate--highlight");
+        }
 
-        if (newIdx != -1)
-            this.candidateElems[newIdx].classList.add("select");
+        if (newIdx == -1)
+            // set saved value
+            this.restoreInputValue();
+        else {
+            this.candidateElems[newIdx].classList.add(this.rootId + "__completion-candidate--highlight");
+
+            this.inputElem.value = this.candidates[newIdx];
+        }
+    }
+    
+    draw(candidates) {
+        this.erase();
+
+        this.isCompletionMouseMoving = false;
+
+        this.candidateElems = (new Array(candidates.length)).fill().map((e) => { return document.createElement("li"); });
+        this.candidateElems.forEach((e, i) => {
+            e.classList.add(this.rootId + "__completion-candidate");
+            e.innerText = candidates[i];
+            e.addEventListener("click", (event) => {
+                console.log(this.candidates[i]);
+            });
+
+            e.addEventListener("mouseenter", (event) => {
+                if (!this.isCompletionMouseMoving)
+                    return;
+                this.point(i);
+            });
+
+            this.completionElem.appendChild(e);
+        });
+    }
+
+    whenEnter(data) {
+        
+    }
+
+    whenClick(data) {
+        console.log(data);
+    }
+
+    erase() {
+        this.completionElem.innerHTML = "";
+    }
+
+    clear() {
+        this.restoreInputValue();
+        this.setCandidates([]);
     }
 
     up() {
@@ -74,68 +181,10 @@ class CompletionDOM {
     over() {
         this.updateSelection(this.rotation.idx, this.rotation.reset());
     }
-
-    draw(candidates) {
-        this.erase();
-
-        this.candidateElems = (new Array(candidates.length)).fill().map((e) => { return document.createElement("li"); });
-        this.candidateElems.forEach((e, i) => {
-            e.classList.add("candidate");
-            e.innerText = candidates[i];
-            e.addEventListener("click", (event) => {
-                console.log(this.candidates[i]);
-            });
-
-            e.addEventListener("mouseenter", (event) => {
-                this.point(i);
-            });
-
-            this.containerElem.appendChild(e);
-        });
-    }
-
-    erase() {
-        this.containerElem.innerHTML = "";
-    }
 }
 
 window.onload = () => {
-    let tag_search = document.getElementById("tag-search");
-
-    completionDOM = new CompletionDOM("completion");
-
-    tag_search.addEventListener("input", (event) => {
-        // candiates
-        completionDOM.render(candidates.filter((candidate) => {
-            return candidate.startsWith(event.target.value, 0);
-        }));
-    });
-
-
-    tag_search.addEventListener("keydown", (e) => {
-        switch (e.key) {
-            case "ArrowUp":
-                e.preventDefault();
-                completionDOM.up();
-                break;
-            case "ArrowDown":
-                e.preventDefault();
-                completionDOM.down();
-                break;
-            case "Enter":
-                let idx = completionDOM.rotation.idx;
-                if (idx < 0) {
-                    console.log(tag_search.value);
-                } else {
-                    console.log(completionDOM.candidates[idx]);
-                }
-                break;
-            case "Escape":
-                completionDOM.render([]);
-                break;
-        }
-    });
-
+    input = new CompletionInput("search-tag", "tag");
 
     let tag_file = document.getElementById("tag-file");
     tag_file.addEventListener("change", async (e) => {
