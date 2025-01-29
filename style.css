@@ -27,6 +27,10 @@ h2 {
 
 }
 
+#search-tag__input:focus {
+    outline: none;
+}
+
 #search-tag__completion {
     width: 100%;
     box-sizing: border-box;
@@ -41,7 +45,8 @@ h2 {
 
     background-color: white;
 
-
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
 }
 
 
@@ -50,16 +55,14 @@ h2 {
     overflow: hidden;
 }
 
-#search-bar {
-
-}
-
 #search-tag__completion:empty {
     display: none;
 }
 
 .search-tag__completion-candidate--highlight {
     background-color: ghostwhite;
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
 }
 
 

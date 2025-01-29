@@ -1,3 +1,4 @@
+
 var candidates = [
     "hello",
     "hello world",
@@ -35,7 +36,7 @@ class Rotation {
     }
 }
 
-class CompletionInput {
+export class CompletionInput {
     constructor(rootId, inputElemName) {
         this.rootId = rootId;
         let rootElem = document.getElementById(rootId);
@@ -45,27 +46,23 @@ class CompletionInput {
         this.inputElem.type = "text";
         this.inputElem.name = inputElemName;
         this.inputElem.addEventListener("input", (event) => {
-            this.setCandidates(candidates.filter((candidate) => {
-                return candidate.startsWith(event.target.value, 0);
-            }));
+            this.setCandidates(this.getCandidatesFor(event.target.value));
+            this.rotation = new Rotation(-1, this.candidates.length);
+            this.draw(this.candidates);
         });
-        this.inputElem.addEventListener("keydown", (e) => {
-            switch (e.key) {
+        this.inputElem.addEventListener("keydown", (event) => {
+            switch (event.key) {
                 case "ArrowUp":
-                    e.preventDefault();
+                    event.preventDefault();
                     this.up();
                     break;
                 case "ArrowDown":
-                    e.preventDefault();
+                    event.preventDefault();
                     this.down();
                     break;
                 case "Enter":
-                    let idx = this.rotation.idx;
-                    if (idx < 0) {
-                        console.log(this.inputElem.value);
-                    } else {
-                        console.log(this.candidates[idx]);
-                    }
+                    this.doSomethingFor(this.text());
+                    this.clear();
                     break;
                 case "Escape":
                     this.clear();
@@ -78,7 +75,6 @@ class CompletionInput {
         this.completionElem.id = rootId + "__completion";
         this.completionElem.addEventListener("mouseleave", () => {
             this.over();
-            console.log("over");
         });
         this.completionElem.addEventListener("mousemove", () => {
             this.isCompletionMouseMoving = true;
@@ -102,28 +98,26 @@ class CompletionInput {
         this.inputElem.value = this.originalInputValue;
     }
 
-    setCandidates(candidates) {
-        if (candidates != this.candidates) {
-            this.rotation = new Rotation(-1, candidates.length);
-            this.draw(this.candidates = structuredClone(candidates));
-        }
-    }
-
     updateSelection(oldIdx, newIdx) {
-        if (oldIdx == -1)
-           this.storeInputValue();
-        else {
+        if (oldIdx != -1)
             this.candidateElems[oldIdx].classList.remove(this.rootId + "__completion-candidate--highlight");
-        }
+        else
+            this.storeInputValue();
 
-        if (newIdx == -1)
-            // set saved value
-            this.restoreInputValue();
-        else {
+        if (newIdx != -1) {
             this.candidateElems[newIdx].classList.add(this.rootId + "__completion-candidate--highlight");
 
-            this.inputElem.value = this.candidates[newIdx];
+            // update suggestion
+            return this.inputElem.value = this.candidates[newIdx];
         }
+        
+        return this.restoreInputValue();
+    }
+
+    setCandidates(candidates) {
+        this.candidates = candidates;
+        this.rotation = new Rotation(-1, this.candidates.length);
+        this.draw(this.candidates);
     }
     
     draw(candidates) {
@@ -136,7 +130,9 @@ class CompletionInput {
             e.classList.add(this.rootId + "__completion-candidate");
             e.innerText = candidates[i];
             e.addEventListener("click", (event) => {
-                console.log(this.candidates[i]);
+                this.inputElem.focus();
+                this.doSomethingFor(this.text());
+                this.clear();
             });
 
             e.addEventListener("mouseenter", (event) => {
@@ -149,20 +145,28 @@ class CompletionInput {
         });
     }
 
-    whenEnter(data) {
-        
+    doSomethingFor(str) {
+        console.log(str);
     }
 
-    whenClick(data) {
-        console.log(data);
+    getCandidatesFor(str) {
+        return candidates.filter((candidate) => {
+            return candidate.startsWith(str, 0);
+        });
     }
 
     erase() {
         this.completionElem.innerHTML = "";
     }
 
+    text() {
+        if (this.rotation.idx < 0)
+            return this.inputElem.value;
+        else
+            return this.candidates[this.rotation.idx];
+    }
+
     clear() {
-        this.restoreInputValue();
         this.setCandidates([]);
     }
 
@@ -182,14 +186,3 @@ class CompletionInput {
         this.updateSelection(this.rotation.idx, this.rotation.reset());
     }
 }
-
-window.onload = () => {
-    input = new CompletionInput("search-tag", "tag");
-
-    let tag_file = document.getElementById("tag-file");
-    tag_file.addEventListener("change", async (e) => {
-        let text = await e.target.files[0].text();
-        candidates = text.match(/[^\r\n]+/g);
-    })
-}
-

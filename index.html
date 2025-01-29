@@ -3,7 +3,21 @@
     <head>
         <link rel="stylesheet" href="style.css">
     </head>
-    <script src="index.js"></script>
+
+    <script type="module" src="./completion-input.js"></script>
+	
+    <script type="module">
+        import { CompletionInput } from "./completion-input.js";
+
+        class MyCompletionInput extends CompletionInput {
+            getCandidatesFor(str) {
+            }
+        }
+
+        window.onload = () => {
+            let input = new CompletionInput("search-tag");
+        }
+    </script>
     <body>
         <h1>hello</h1>
         <!-- <form action="/tags" method="post">
