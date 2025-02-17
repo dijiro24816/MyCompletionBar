@@ -10,13 +10,25 @@
         import { CompletionInput } from "./completion-input.js";
 
         class MyCompletionInput extends CompletionInput {
-            getCandidatesFor(str) {
+            async captureCandidatesFor(str) {
+                var cands = [
+                    "hello",
+                    "please"
+
+                ]
+                this.setCandidates(cands.filter((candidate) => {
+                    return candidate.startsWith(str, 0);
+                }));
             }
         }
 
         window.onload = () => {
-            let input = new CompletionInput("search-tag");
+            // const myi = new MyCompletionInput("search-tag");
         }
+
+        window.myi = new MyCompletionInput("search-tag");
+
+        console.log("ok");
     </script>
     <body>
         <h1>hello</h1>

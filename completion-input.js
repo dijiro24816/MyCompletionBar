@@ -46,9 +46,7 @@ export class CompletionInput {
         this.inputElem.type = "text";
         this.inputElem.name = inputElemName;
         this.inputElem.addEventListener("input", (event) => {
-            this.setCandidates(this.getCandidatesFor(event.target.value));
-            this.rotation = new Rotation(-1, this.candidates.length);
-            this.draw(this.candidates);
+            this.captureCandidatesFor(event.target.value);
         });
         this.inputElem.addEventListener("keydown", (event) => {
             switch (event.key) {
@@ -149,10 +147,10 @@ export class CompletionInput {
         console.log(str);
     }
 
-    getCandidatesFor(str) {
-        return candidates.filter((candidate) => {
+    async captureCandidatesFor(str) {
+        this.setCandidates(candidates.filter((candidate) => {
             return candidate.startsWith(str, 0);
-        });
+        }));
     }
 
     erase() {
